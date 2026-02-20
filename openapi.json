@@ -1,0 +1,1182 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Blog Posting Service",
+    "description": "Stores and serves blog posts for websites",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key"
+      }
+    },
+    "schemas": {
+      "PostId": {
+        "type": "string",
+        "format": "uuid",
+        "description": "Blog post UUID"
+      },
+      "Slug": {
+        "type": "string",
+        "description": "Blog post slug"
+      },
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "service"
+        ]
+      },
+      "PostResponse": {
+        "type": "object",
+        "properties": {
+          "post": {
+            "$ref": "#/components/schemas/BlogPost"
+          }
+        },
+        "required": [
+          "post"
+        ]
+      },
+      "BlogPost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "appId": {
+            "type": "string"
+          },
+          "orgId": {
+            "type": "string",
+            "nullable": true
+          },
+          "userId": {
+            "type": "string",
+            "nullable": true
+          },
+          "campaignId": {
+            "type": "string",
+            "nullable": true
+          },
+          "runId": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "bodyMarkdown": {
+            "type": "string"
+          },
+          "bodyHtml": {
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "authorAvatarUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetSite": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "previewToken": {
+            "type": "string",
+            "nullable": true
+          },
+          "metaDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "ogImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourceType": {
+            "type": "string",
+            "nullable": true
+          },
+          "sourceMessageId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "appId",
+          "orgId",
+          "userId",
+          "campaignId",
+          "runId",
+          "title",
+          "slug",
+          "summary",
+          "bodyMarkdown",
+          "bodyHtml",
+          "coverImageUrl",
+          "authorName",
+          "authorAvatarUrl",
+          "targetSite",
+          "status",
+          "publishedAt",
+          "previewToken",
+          "metaDescription",
+          "ogImageUrl",
+          "tags",
+          "sourceType",
+          "sourceMessageId",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ValidationErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "details": {
+            "type": "object",
+            "properties": {
+              "formErrors": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "fieldErrors": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "required": [
+              "formErrors",
+              "fieldErrors"
+            ]
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "error"
+        ]
+      },
+      "CreatePostBody": {
+        "type": "object",
+        "properties": {
+          "appId": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          },
+          "orgId": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          },
+          "campaignId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "bodyMarkdown": {
+            "type": "string"
+          },
+          "bodyHtml": {
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "authorAvatarUrl": {
+            "type": "string"
+          },
+          "targetSite": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "ogImageUrl": {
+            "type": "string"
+          },
+          "sourceType": {
+            "type": "string"
+          },
+          "sourceMessageId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appId",
+          "runId",
+          "title",
+          "bodyMarkdown",
+          "bodyHtml",
+          "authorName",
+          "targetSite"
+        ]
+      },
+      "PublishPostBody": {
+        "type": "object",
+        "properties": {
+          "appId": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appId",
+          "runId"
+        ]
+      },
+      "UpdatePostBody": {
+        "type": "object",
+        "properties": {
+          "appId": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "bodyMarkdown": {
+            "type": "string"
+          },
+          "bodyHtml": {
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "authorAvatarUrl": {
+            "type": "string"
+          },
+          "targetSite": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "metaDescription": {
+            "type": "string"
+          },
+          "ogImageUrl": {
+            "type": "string"
+          },
+          "sourceType": {
+            "type": "string"
+          },
+          "sourceMessageId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appId",
+          "runId"
+        ]
+      },
+      "SuccessResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "success"
+        ]
+      },
+      "DeletePostBody": {
+        "type": "object",
+        "properties": {
+          "appId": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appId",
+          "runId"
+        ]
+      },
+      "PostListResponse": {
+        "type": "object",
+        "properties": {
+          "posts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BlogPost"
+            }
+          },
+          "total": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "posts",
+          "total"
+        ]
+      },
+      "PublicPostListResponse": {
+        "type": "object",
+        "properties": {
+          "posts": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PublicBlogPost"
+            }
+          }
+        },
+        "required": [
+          "posts"
+        ]
+      },
+      "PublicBlogPost": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true
+          },
+          "bodyMarkdown": {
+            "type": "string"
+          },
+          "bodyHtml": {
+            "type": "string"
+          },
+          "coverImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "authorAvatarUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetSite": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "format": "date-time"
+          },
+          "metaDescription": {
+            "type": "string",
+            "nullable": true
+          },
+          "ogImageUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "tags": {
+            "type": "array",
+            "nullable": true,
+            "items": {
+              "type": "string"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "slug",
+          "summary",
+          "bodyMarkdown",
+          "bodyHtml",
+          "coverImageUrl",
+          "authorName",
+          "authorAvatarUrl",
+          "targetSite",
+          "status",
+          "publishedAt",
+          "metaDescription",
+          "ogImageUrl",
+          "tags",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "PublicPostResponse": {
+        "type": "object",
+        "properties": {
+          "post": {
+            "$ref": "#/components/schemas/PublicBlogPost"
+          }
+        },
+        "required": [
+          "post"
+        ]
+      }
+    },
+    "parameters": {
+      "PostId": {
+        "schema": {
+          "$ref": "#/components/schemas/PostId"
+        },
+        "required": true,
+        "description": "Blog post UUID",
+        "name": "id",
+        "in": "path"
+      },
+      "Slug": {
+        "schema": {
+          "$ref": "#/components/schemas/Slug"
+        },
+        "required": true,
+        "description": "Blog post slug",
+        "name": "slug",
+        "in": "path"
+      }
+    }
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "getHealth",
+        "summary": "Health check",
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts": {
+      "post": {
+        "operationId": "createPost",
+        "summary": "Create a blog post (default status: draft)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created blog post",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "operationId": "listPosts",
+        "summary": "List posts (internal, filtered)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "appId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "orgId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "status",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "targetSite",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": false,
+            "name": "campaignId",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required query parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{id}/publish": {
+      "post": {
+        "operationId": "publishPost",
+        "summary": "Change draft to published",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PostId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishPostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Published blog post",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Post already published",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/{id}": {
+      "patch": {
+        "operationId": "updatePost",
+        "summary": "Update a post",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PostId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated blog post",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deletePost",
+        "summary": "Archive a post (soft delete)",
+        "security": [
+          {
+            "ApiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PostId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeletePostBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Post archived",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SuccessResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/public": {
+      "get": {
+        "operationId": "listPublicPosts",
+        "summary": "Published posts for a site",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "targetSite",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true
+            },
+            "required": false,
+            "name": "limit",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "number",
+              "nullable": true
+            },
+            "required": false,
+            "name": "offset",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of published posts",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPostListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required query parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/public/{slug}": {
+      "get": {
+        "operationId": "getPublicPost",
+        "summary": "Single published post by slug",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Slug"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "targetSite",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Published blog post",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPostResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required query parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/posts/preview/{id}": {
+      "get": {
+        "operationId": "previewPost",
+        "summary": "Draft preview with token",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/PostId"
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "required": true,
+            "name": "token",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Blog post preview",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicPostResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid preview token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Post not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
