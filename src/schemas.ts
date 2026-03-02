@@ -35,14 +35,20 @@ export const HealthResponseSchema = z
   })
   .openapi("HealthResponse");
 
+// --- Identity header schemas ---
+
+const IdentityHeaders = z.object({
+  "x-org-id": z.string().openapi({ description: "Internal org UUID from client-service" }),
+  "x-user-id": z.string().openapi({ description: "Internal user UUID from client-service" }),
+});
+
 // --- Blog Post schemas ---
 
 export const BlogPostSchema = z
   .object({
     id: z.string().uuid(),
-    appId: z.string(),
-    orgId: z.string().nullable(),
-    userId: z.string().nullable(),
+    orgId: z.string(),
+    userId: z.string(),
     campaignId: z.string().nullable(),
     runId: z.string().nullable(),
     title: z.string(),
@@ -93,10 +99,7 @@ export const PublicBlogPostSchema = z
 
 export const CreatePostBodySchema = z
   .object({
-    appId: z.string(),
     runId: z.string(),
-    orgId: z.string().optional(),
-    userId: z.string().optional(),
     campaignId: z.string().optional(),
     title: z.string(),
     slug: z.string().optional(),
@@ -118,14 +121,12 @@ export const CreatePostBodySchema = z
 
 export const PublishPostBodySchema = z
   .object({
-    appId: z.string(),
     runId: z.string(),
   })
   .openapi("PublishPostBody");
 
 export const UpdatePostBodySchema = z
   .object({
-    appId: z.string(),
     runId: z.string(),
     title: z.string().optional(),
     slug: z.string().optional(),
@@ -147,7 +148,6 @@ export const UpdatePostBodySchema = z
 
 export const DeletePostBodySchema = z
   .object({
-    appId: z.string(),
     runId: z.string(),
   })
   .openapi("DeletePostBody");
@@ -218,7 +218,7 @@ registry.registerPath({
   },
 });
 
-// --- Internal endpoints (x-api-key required) ---
+// --- Internal endpoints (x-api-key + identity headers required) ---
 
 registry.registerPath({
   method: "post",
@@ -227,6 +227,7 @@ registry.registerPath({
   summary: "Create a blog post (default status: draft)",
   security: [{ ApiKeyAuth: [] }],
   request: {
+    headers: IdentityHeaders,
     body: {
       required: true,
       content: { "application/json": { schema: CreatePostBodySchema } },
@@ -259,6 +260,7 @@ registry.registerPath({
   summary: "Change draft to published",
   security: [{ ApiKeyAuth: [] }],
   request: {
+    headers: IdentityHeaders,
     params: z.object({ id: PostIdParam }),
     body: {
       required: true,
@@ -296,6 +298,7 @@ registry.registerPath({
   summary: "Update a post",
   security: [{ ApiKeyAuth: [] }],
   request: {
+    headers: IdentityHeaders,
     params: z.object({ id: PostIdParam }),
     body: {
       required: true,
@@ -333,6 +336,7 @@ registry.registerPath({
   summary: "Archive a post (soft delete)",
   security: [{ ApiKeyAuth: [] }],
   request: {
+    headers: IdentityHeaders,
     params: z.object({ id: PostIdParam }),
     body: {
       required: true,
@@ -363,12 +367,11 @@ registry.registerPath({
   method: "get",
   path: "/posts",
   operationId: "listPosts",
-  summary: "List posts (internal, filtered)",
+  summary: "List posts (internal, filtered by org from header)",
   security: [{ ApiKeyAuth: [] }],
   request: {
+    headers: IdentityHeaders,
     query: z.object({
-      appId: z.string(),
-      orgId: z.string().optional(),
       status: z.string().optional(),
       targetSite: z.string().optional(),
       campaignId: z.string().optional(),
@@ -382,7 +385,7 @@ registry.registerPath({
       content: { "application/json": { schema: PostListResponseSchema } },
     },
     400: {
-      description: "Missing required query parameter",
+      description: "Missing required header",
       content: { "application/json": { schema: ErrorResponseSchema } },
     },
     401: {

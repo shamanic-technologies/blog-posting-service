@@ -8,3 +8,15 @@ export function requireApiKey(req: Request, res: Response, next: NextFunction) {
   }
   next();
 }
+
+export function requireIdentity(req: Request, res: Response, next: NextFunction) {
+  const orgId = req.headers["x-org-id"] as string | undefined;
+  const userId = req.headers["x-user-id"] as string | undefined;
+
+  if (!orgId || !userId) {
+    res.status(400).json({ error: "x-org-id and x-user-id headers are required" });
+    return;
+  }
+
+  next();
+}
