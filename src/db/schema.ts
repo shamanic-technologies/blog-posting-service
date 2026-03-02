@@ -6,9 +6,8 @@ export const blogPosts = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
 
     // Ownership
-    appId: text("app_id").notNull(),
-    orgId: text("org_id"),
-    userId: text("user_id"),
+    orgId: text("org_id").notNull(),
+    userId: text("user_id").notNull(),
     campaignId: text("campaign_id"),
     runId: text("run_id"),
 
@@ -45,7 +44,7 @@ export const blogPosts = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
-    index("idx_posts_app_id").on(table.appId),
+    index("idx_posts_org_id").on(table.orgId),
     index("idx_posts_slug_site").on(table.slug, table.targetSite),
     index("idx_posts_target_site_status").on(table.targetSite, table.status),
   ]

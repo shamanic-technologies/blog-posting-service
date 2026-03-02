@@ -6,7 +6,6 @@ export async function cleanTestData() {
 }
 
 export async function insertTestPost(data: {
-  appId?: string;
   runId?: string;
   title: string;
   slug: string;
@@ -27,7 +26,8 @@ export async function insertTestPost(data: {
   const [post] = await db
     .insert(blogPosts)
     .values({
-      appId: data.appId || "test-app",
+      orgId: data.orgId || "test-org-id",
+      userId: data.userId || "test-user-id",
       runId: data.runId || "test-run",
       title: data.title,
       slug: data.slug,
@@ -39,8 +39,6 @@ export async function insertTestPost(data: {
       publishedAt: data.publishedAt,
       previewToken: data.previewToken || "preview-token-123",
       tags: data.tags,
-      orgId: data.orgId,
-      userId: data.userId,
       campaignId: data.campaignId,
       summary: data.summary,
       metaDescription: data.metaDescription,

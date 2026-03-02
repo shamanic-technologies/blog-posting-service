@@ -61,16 +61,11 @@
             "type": "string",
             "format": "uuid"
           },
-          "appId": {
+          "orgId": {
             "type": "string"
           },
-          "orgId": {
-            "type": "string",
-            "nullable": true
-          },
           "userId": {
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "campaignId": {
             "type": "string",
@@ -156,7 +151,6 @@
         },
         "required": [
           "id",
-          "appId",
           "orgId",
           "userId",
           "campaignId",
@@ -231,16 +225,7 @@
       "CreatePostBody": {
         "type": "object",
         "properties": {
-          "appId": {
-            "type": "string"
-          },
           "runId": {
-            "type": "string"
-          },
-          "orgId": {
-            "type": "string"
-          },
-          "userId": {
             "type": "string"
           },
           "campaignId": {
@@ -300,7 +285,6 @@
           }
         },
         "required": [
-          "appId",
           "runId",
           "title",
           "bodyMarkdown",
@@ -312,24 +296,17 @@
       "PublishPostBody": {
         "type": "object",
         "properties": {
-          "appId": {
-            "type": "string"
-          },
           "runId": {
             "type": "string"
           }
         },
         "required": [
-          "appId",
           "runId"
         ]
       },
       "UpdatePostBody": {
         "type": "object",
         "properties": {
-          "appId": {
-            "type": "string"
-          },
           "runId": {
             "type": "string"
           },
@@ -388,7 +365,6 @@
           }
         },
         "required": [
-          "appId",
           "runId"
         ]
       },
@@ -409,15 +385,11 @@
       "DeletePostBody": {
         "type": "object",
         "properties": {
-          "appId": {
-            "type": "string"
-          },
           "runId": {
             "type": "string"
           }
         },
         "required": [
-          "appId",
           "runId"
         ]
       },
@@ -603,6 +575,28 @@
             "ApiKeyAuth": []
           }
         ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal org UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal org UUID from client-service",
+            "name": "x-org-id",
+            "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal user UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal user UUID from client-service",
+            "name": "x-user-id",
+            "in": "header"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -658,29 +652,13 @@
       },
       "get": {
         "operationId": "listPosts",
-        "summary": "List posts (internal, filtered)",
+        "summary": "List posts (internal, filtered by org from header)",
         "security": [
           {
             "ApiKeyAuth": []
           }
         ],
         "parameters": [
-          {
-            "schema": {
-              "type": "string"
-            },
-            "required": true,
-            "name": "appId",
-            "in": "query"
-          },
-          {
-            "schema": {
-              "type": "string"
-            },
-            "required": false,
-            "name": "orgId",
-            "in": "query"
-          },
           {
             "schema": {
               "type": "string"
@@ -722,6 +700,26 @@
             "required": false,
             "name": "offset",
             "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal org UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal org UUID from client-service",
+            "name": "x-org-id",
+            "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal user UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal user UUID from client-service",
+            "name": "x-user-id",
+            "in": "header"
           }
         ],
         "responses": {
@@ -736,7 +734,7 @@
             }
           },
           "400": {
-            "description": "Missing required query parameter",
+            "description": "Missing required header",
             "content": {
               "application/json": {
                 "schema": {
@@ -780,6 +778,26 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/PostId"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal org UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal org UUID from client-service",
+            "name": "x-org-id",
+            "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal user UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal user UUID from client-service",
+            "name": "x-user-id",
+            "in": "header"
           }
         ],
         "requestBody": {
@@ -858,6 +876,26 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/PostId"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal org UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal org UUID from client-service",
+            "name": "x-org-id",
+            "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal user UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal user UUID from client-service",
+            "name": "x-user-id",
+            "in": "header"
           }
         ],
         "requestBody": {
@@ -934,6 +972,26 @@
         "parameters": [
           {
             "$ref": "#/components/parameters/PostId"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal org UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal org UUID from client-service",
+            "name": "x-org-id",
+            "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Internal user UUID from client-service"
+            },
+            "required": true,
+            "description": "Internal user UUID from client-service",
+            "name": "x-user-id",
+            "in": "header"
           }
         ],
         "requestBody": {

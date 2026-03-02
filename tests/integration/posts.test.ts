@@ -24,7 +24,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set(authHeaders)
         .send({
-          appId: "test-app",
           runId: "test-run",
           title: "My First Post",
           bodyMarkdown: "# Hello World",
@@ -37,6 +36,8 @@ describe("Posts CRUD", () => {
       expect(res.body.post.title).toBe("My First Post");
       expect(res.body.post.slug).toBe("my-first-post");
       expect(res.body.post.status).toBe("draft");
+      expect(res.body.post.orgId).toBe("test-org-id");
+      expect(res.body.post.userId).toBe("test-user-id");
       expect(res.body.post.previewToken).toBeDefined();
       expect(res.body.post.publishedAt).toBeNull();
     });
@@ -46,7 +47,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set(authHeaders)
         .send({
-          appId: "test-app",
           runId: "test-run",
           title: "Published Post",
           bodyMarkdown: "# Published",
@@ -66,7 +66,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set(authHeaders)
         .send({
-          appId: "test-app",
           runId: "test-run",
           title: "My Post",
           slug: "custom-slug",
@@ -91,7 +90,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set(authHeaders)
         .send({
-          appId: "test-app",
           runId: "test-run",
           title: "My Post",
           bodyMarkdown: "# Test",
@@ -107,8 +105,8 @@ describe("Posts CRUD", () => {
     it("rejects without API key", async () => {
       const res = await request(app)
         .post("/posts")
+        .set({ "x-org-id": "test-org-id", "x-user-id": "test-user-id" })
         .send({
-          appId: "test-app",
           runId: "test-run",
           title: "Test",
           bodyMarkdown: "# Test",
@@ -120,11 +118,28 @@ describe("Posts CRUD", () => {
       expect(res.status).toBe(401);
     });
 
+    it("rejects without identity headers", async () => {
+      const res = await request(app)
+        .post("/posts")
+        .set({ "X-API-Key": "test-api-key", "Content-Type": "application/json" })
+        .send({
+          runId: "test-run",
+          title: "Test",
+          bodyMarkdown: "# Test",
+          bodyHtml: "<h1>Test</h1>",
+          authorName: "Kevin",
+          targetSite: "test.com",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("x-org-id");
+    });
+
     it("rejects missing required fields", async () => {
       const res = await request(app)
         .post("/posts")
         .set(authHeaders)
-        .send({ appId: "test-app" });
+        .send({ runId: "test-run" });
 
       expect(res.status).toBe(400);
     });
@@ -143,7 +158,7 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .post(`/posts/${post.id}/publish`)
         .set(authHeaders)
-        .send({ appId: "test-app", runId: "test-run" });
+        .send({ runId: "test-run" });
 
       expect(res.status).toBe(200);
       expect(res.body.post.status).toBe("published");
@@ -161,7 +176,7 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .post(`/posts/${post.id}/publish`)
         .set(authHeaders)
-        .send({ appId: "test-app", runId: "test-run" });
+        .send({ runId: "test-run" });
 
       expect(res.status).toBe(400);
     });
@@ -170,7 +185,7 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .post("/posts/00000000-0000-0000-0000-000000000000/publish")
         .set(authHeaders)
-        .send({ appId: "test-app", runId: "test-run" });
+        .send({ runId: "test-run" });
 
       expect(res.status).toBe(404);
     });
@@ -189,7 +204,6 @@ describe("Posts CRUD", () => {
         .patch(`/posts/${post.id}`)
         .set(authHeaders)
         .send({
-          appId: "test-app",
           runId: "test-run",
           title: "Updated Title",
           summary: "New summary",
@@ -204,7 +218,7 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .patch("/posts/00000000-0000-0000-0000-000000000000")
         .set(authHeaders)
-        .send({ appId: "test-app", runId: "test-run", title: "Updated" });
+        .send({ runId: "test-run", title: "Updated" });
 
       expect(res.status).toBe(404);
     });
@@ -212,7 +226,8 @@ describe("Posts CRUD", () => {
     it("rejects without API key", async () => {
       const res = await request(app)
         .patch("/posts/00000000-0000-0000-0000-000000000000")
-        .send({ appId: "test-app", runId: "test-run", title: "Updated" });
+        .set({ "x-org-id": "test-org-id", "x-user-id": "test-user-id" })
+        .send({ runId: "test-run", title: "Updated" });
 
       expect(res.status).toBe(401);
     });
@@ -230,7 +245,7 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .delete(`/posts/${post.id}`)
         .set(authHeaders)
-        .send({ appId: "test-app", runId: "test-run" });
+        .send({ runId: "test-run" });
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -239,7 +254,7 @@ describe("Posts CRUD", () => {
       const listRes = await request(app)
         .get("/posts")
         .set(authHeaders)
-        .query({ appId: "test-app", status: "archived" });
+        .query({ status: "archived" });
 
       expect(listRes.body.posts).toHaveLength(1);
       expect(listRes.body.posts[0].id).toBe(post.id);
@@ -249,7 +264,7 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .delete("/posts/00000000-0000-0000-0000-000000000000")
         .set(authHeaders)
-        .send({ appId: "test-app", runId: "test-run" });
+        .send({ runId: "test-run" });
 
       expect(res.status).toBe(404);
     });
@@ -257,7 +272,8 @@ describe("Posts CRUD", () => {
     it("rejects without API key", async () => {
       const res = await request(app)
         .delete("/posts/00000000-0000-0000-0000-000000000000")
-        .send({ appId: "test-app", runId: "test-run" });
+        .set({ "x-org-id": "test-org-id", "x-user-id": "test-user-id" })
+        .send({ runId: "test-run" });
 
       expect(res.status).toBe(401);
     });
@@ -266,15 +282,14 @@ describe("Posts CRUD", () => {
   // --- GET /posts ---
 
   describe("GET /posts", () => {
-    it("lists posts filtered by appId", async () => {
-      await insertTestPost({ title: "Post 1", slug: "post-1", appId: "app-1" });
-      await insertTestPost({ title: "Post 2", slug: "post-2", appId: "app-1" });
-      await insertTestPost({ title: "Post 3", slug: "post-3", appId: "app-2" });
+    it("lists posts filtered by orgId from header", async () => {
+      await insertTestPost({ title: "Post 1", slug: "post-1", orgId: "test-org-id" });
+      await insertTestPost({ title: "Post 2", slug: "post-2", orgId: "test-org-id" });
+      await insertTestPost({ title: "Post 3", slug: "post-3", orgId: "other-org" });
 
       const res = await request(app)
         .get("/posts")
-        .set(authHeaders)
-        .query({ appId: "app-1" });
+        .set(authHeaders);
 
       expect(res.status).toBe(200);
       expect(res.body.posts).toHaveLength(2);
@@ -293,17 +308,17 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .get("/posts")
         .set(authHeaders)
-        .query({ appId: "test-app", status: "published" });
+        .query({ status: "published" });
 
       expect(res.status).toBe(200);
       expect(res.body.posts).toHaveLength(1);
       expect(res.body.posts[0].title).toBe("Published");
     });
 
-    it("returns 400 without appId", async () => {
+    it("returns 400 without identity headers", async () => {
       const res = await request(app)
         .get("/posts")
-        .set(authHeaders);
+        .set({ "X-API-Key": "test-api-key" });
 
       expect(res.status).toBe(400);
     });
@@ -311,7 +326,7 @@ describe("Posts CRUD", () => {
     it("rejects without API key", async () => {
       const res = await request(app)
         .get("/posts")
-        .query({ appId: "test-app" });
+        .set({ "x-org-id": "test-org-id", "x-user-id": "test-user-id" });
 
       expect(res.status).toBe(401);
     });
@@ -361,7 +376,6 @@ describe("Posts CRUD", () => {
       expect(res.status).toBe(200);
       const post = res.body.posts[0];
       expect(post.orgId).toBeUndefined();
-      expect(post.appId).toBeUndefined();
       expect(post.runId).toBeUndefined();
       expect(post.previewToken).toBeUndefined();
       expect(post.sourceType).toBeUndefined();
@@ -488,7 +502,6 @@ describe("Posts CRUD", () => {
 
       expect(res.status).toBe(200);
       expect(res.body.post.orgId).toBeUndefined();
-      expect(res.body.post.appId).toBeUndefined();
       expect(res.body.post.previewToken).toBeUndefined();
     });
   });

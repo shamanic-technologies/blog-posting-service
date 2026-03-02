@@ -8,6 +8,13 @@
       "when": 1771587890107,
       "tag": "0000_glamorous_mordo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772620800000,
+      "tag": "0001_remove_appid_require_identity",
+      "breakpoints": true
     }
   ]
 }

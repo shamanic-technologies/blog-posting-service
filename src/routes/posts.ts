@@ -3,7 +3,7 @@ import { eq, and, desc, sql as dsql } from "drizzle-orm";
 import crypto from "crypto";
 import { db } from "../db/index.js";
 import { blogPosts } from "../db/schema.js";
-import { requireApiKey } from "../middleware/auth.js";
+import { requireApiKey, requireIdentity } from "../middleware/auth.js";
 import {
   CreatePostBodySchema,
   PublishPostBodySchema,
@@ -25,7 +25,6 @@ function slugify(title: string): string {
 
 function stripInternalFields(post: BlogPost) {
   const {
-    appId: _appId,
     orgId: _orgId,
     userId: _userId,
     campaignId: _campaignId,
@@ -38,10 +37,10 @@ function stripInternalFields(post: BlogPost) {
   return publicPost;
 }
 
-// --- Internal endpoints (x-api-key required) ---
+// --- Internal endpoints (x-api-key + identity headers required) ---
 
 // POST /posts — Create a blog post
-router.post("/posts", requireApiKey, async (req, res) => {
+router.post("/posts", requireApiKey, requireIdentity, async (req, res) => {
   try {
     const parsed = CreatePostBodySchema.safeParse(req.body);
     if (!parsed.success) {
@@ -49,6 +48,8 @@ router.post("/posts", requireApiKey, async (req, res) => {
       return;
     }
 
+    const orgId = req.headers["x-org-id"] as string;
+    const userId = req.headers["x-user-id"] as string;
     const data = parsed.data;
 
     // Auto-generate slug from title if not provided
@@ -81,10 +82,9 @@ router.post("/posts", requireApiKey, async (req, res) => {
     const [post] = await db
       .insert(blogPosts)
       .values({
-        appId: data.appId,
+        orgId,
+        userId,
         runId: data.runId,
-        orgId: data.orgId,
-        userId: data.userId,
         campaignId: data.campaignId,
         title: data.title,
         slug,
@@ -114,7 +114,7 @@ router.post("/posts", requireApiKey, async (req, res) => {
 });
 
 // POST /posts/:id/publish — Change draft to published
-router.post("/posts/:id/publish", requireApiKey, async (req, res) => {
+router.post("/posts/:id/publish", requireApiKey, requireIdentity, async (req, res) => {
   try {
     const parsed = PublishPostBodySchema.safeParse(req.body);
     if (!parsed.success) {
@@ -158,7 +158,7 @@ router.post("/posts/:id/publish", requireApiKey, async (req, res) => {
 });
 
 // PATCH /posts/:id — Update a post
-router.patch("/posts/:id", requireApiKey, async (req, res) => {
+router.patch("/posts/:id", requireApiKey, requireIdentity, async (req, res) => {
   try {
     const parsed = UpdatePostBodySchema.safeParse(req.body);
     if (!parsed.success) {
@@ -167,7 +167,7 @@ router.patch("/posts/:id", requireApiKey, async (req, res) => {
     }
 
     const { id } = req.params;
-    const { appId: _appId, runId: _runId, ...fieldsToUpdate } = parsed.data;
+    const { runId: _runId, ...fieldsToUpdate } = parsed.data;
 
     const existing = await db
       .select()
@@ -197,7 +197,7 @@ router.patch("/posts/:id", requireApiKey, async (req, res) => {
 });
 
 // DELETE /posts/:id — Archive a post (soft delete)
-router.delete("/posts/:id", requireApiKey, async (req, res) => {
+router.delete("/posts/:id", requireApiKey, requireIdentity, async (req, res) => {
   try {
     const parsed = DeletePostBodySchema.safeParse(req.body);
     if (!parsed.success) {
@@ -233,18 +233,13 @@ router.delete("/posts/:id", requireApiKey, async (req, res) => {
   }
 });
 
-// GET /posts — List posts (internal, filtered)
-router.get("/posts", requireApiKey, async (req, res) => {
+// GET /posts — List posts (internal, filtered by org from header)
+router.get("/posts", requireApiKey, requireIdentity, async (req, res) => {
   try {
-    const { appId, orgId, status, targetSite, campaignId, limit, offset } = req.query;
+    const orgId = req.headers["x-org-id"] as string;
+    const { status, targetSite, campaignId, limit, offset } = req.query;
 
-    if (!appId) {
-      res.status(400).json({ error: "appId query parameter is required" });
-      return;
-    }
-
-    const conditions = [eq(blogPosts.appId, appId as string)];
-    if (orgId) conditions.push(eq(blogPosts.orgId, orgId as string));
+    const conditions = [eq(blogPosts.orgId, orgId)];
     if (status) conditions.push(eq(blogPosts.status, status as string));
     if (targetSite) conditions.push(eq(blogPosts.targetSite, targetSite as string));
     if (campaignId) conditions.push(eq(blogPosts.campaignId, campaignId as string));
