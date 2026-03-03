@@ -225,9 +225,6 @@
       "CreatePostBody": {
         "type": "object",
         "properties": {
-          "runId": {
-            "type": "string"
-          },
           "campaignId": {
             "type": "string"
           },
@@ -285,7 +282,6 @@
           }
         },
         "required": [
-          "runId",
           "title",
           "bodyMarkdown",
           "bodyHtml",
@@ -293,23 +289,9 @@
           "targetSite"
         ]
       },
-      "PublishPostBody": {
-        "type": "object",
-        "properties": {
-          "runId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "runId"
-        ]
-      },
       "UpdatePostBody": {
         "type": "object",
         "properties": {
-          "runId": {
-            "type": "string"
-          },
           "title": {
             "type": "string"
           },
@@ -363,10 +345,7 @@
           "sourceMessageId": {
             "type": "string"
           }
-        },
-        "required": [
-          "runId"
-        ]
+        }
       },
       "SuccessResponse": {
         "type": "object",
@@ -380,17 +359,6 @@
         },
         "required": [
           "success"
-        ]
-      },
-      "DeletePostBody": {
-        "type": "object",
-        "properties": {
-          "runId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "runId"
         ]
       },
       "PostListResponse": {
@@ -595,6 +563,16 @@
             "description": "Internal user UUID from client-service",
             "name": "x-user-id",
             "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Caller's run ID from runs-service"
+            },
+            "required": true,
+            "description": "Caller's run ID from runs-service",
+            "name": "x-run-id",
+            "in": "header"
           }
         ],
         "requestBody": {
@@ -720,6 +698,16 @@
             "description": "Internal user UUID from client-service",
             "name": "x-user-id",
             "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Caller's run ID from runs-service"
+            },
+            "required": true,
+            "description": "Caller's run ID from runs-service",
+            "name": "x-run-id",
+            "in": "header"
           }
         ],
         "responses": {
@@ -798,18 +786,18 @@
             "description": "Internal user UUID from client-service",
             "name": "x-user-id",
             "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Caller's run ID from runs-service"
+            },
+            "required": true,
+            "description": "Caller's run ID from runs-service",
+            "name": "x-run-id",
+            "in": "header"
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PublishPostBody"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Published blog post",
@@ -895,6 +883,16 @@
             "required": true,
             "description": "Internal user UUID from client-service",
             "name": "x-user-id",
+            "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Caller's run ID from runs-service"
+            },
+            "required": true,
+            "description": "Caller's run ID from runs-service",
+            "name": "x-run-id",
             "in": "header"
           }
         ],
@@ -992,18 +990,18 @@
             "description": "Internal user UUID from client-service",
             "name": "x-user-id",
             "in": "header"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "description": "Caller's run ID from runs-service"
+            },
+            "required": true,
+            "description": "Caller's run ID from runs-service",
+            "name": "x-run-id",
+            "in": "header"
           }
         ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeletePostBody"
-              }
-            }
-          }
-        },
         "responses": {
           "200": {
             "description": "Post archived",

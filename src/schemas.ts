@@ -40,6 +40,7 @@ export const HealthResponseSchema = z
 const IdentityHeaders = z.object({
   "x-org-id": z.string().openapi({ description: "Internal org UUID from client-service" }),
   "x-user-id": z.string().openapi({ description: "Internal user UUID from client-service" }),
+  "x-run-id": z.string().openapi({ description: "Caller's run ID from runs-service" }),
 });
 
 // --- Blog Post schemas ---
@@ -99,7 +100,6 @@ export const PublicBlogPostSchema = z
 
 export const CreatePostBodySchema = z
   .object({
-    runId: z.string(),
     campaignId: z.string().optional(),
     title: z.string(),
     slug: z.string().optional(),
@@ -119,15 +119,8 @@ export const CreatePostBodySchema = z
   })
   .openapi("CreatePostBody");
 
-export const PublishPostBodySchema = z
-  .object({
-    runId: z.string(),
-  })
-  .openapi("PublishPostBody");
-
 export const UpdatePostBodySchema = z
   .object({
-    runId: z.string(),
     title: z.string().optional(),
     slug: z.string().optional(),
     summary: z.string().optional(),
@@ -145,12 +138,6 @@ export const UpdatePostBodySchema = z
     sourceMessageId: z.string().optional(),
   })
   .openapi("UpdatePostBody");
-
-export const DeletePostBodySchema = z
-  .object({
-    runId: z.string(),
-  })
-  .openapi("DeletePostBody");
 
 // --- Response schemas ---
 
@@ -262,10 +249,6 @@ registry.registerPath({
   request: {
     headers: IdentityHeaders,
     params: z.object({ id: PostIdParam }),
-    body: {
-      required: true,
-      content: { "application/json": { schema: PublishPostBodySchema } },
-    },
   },
   responses: {
     200: {
@@ -338,10 +321,6 @@ registry.registerPath({
   request: {
     headers: IdentityHeaders,
     params: z.object({ id: PostIdParam }),
-    body: {
-      required: true,
-      content: { "application/json": { schema: DeletePostBodySchema } },
-    },
   },
   responses: {
     200: {
