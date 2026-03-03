@@ -6,9 +6,7 @@ import { blogPosts } from "../db/schema.js";
 import { requireApiKey, requireIdentity } from "../middleware/auth.js";
 import {
   CreatePostBodySchema,
-  PublishPostBodySchema,
   UpdatePostBodySchema,
-  DeletePostBodySchema,
 } from "../schemas.js";
 import type { BlogPost } from "../db/schema.js";
 
@@ -50,6 +48,7 @@ router.post("/posts", requireApiKey, requireIdentity, async (req, res) => {
 
     const orgId = req.headers["x-org-id"] as string;
     const userId = req.headers["x-user-id"] as string;
+    const runId = req.headers["x-run-id"] as string;
     const data = parsed.data;
 
     // Auto-generate slug from title if not provided
@@ -84,7 +83,7 @@ router.post("/posts", requireApiKey, requireIdentity, async (req, res) => {
       .values({
         orgId,
         userId,
-        runId: data.runId,
+        runId,
         campaignId: data.campaignId,
         title: data.title,
         slug,
@@ -116,12 +115,6 @@ router.post("/posts", requireApiKey, requireIdentity, async (req, res) => {
 // POST /posts/:id/publish — Change draft to published
 router.post("/posts/:id/publish", requireApiKey, requireIdentity, async (req, res) => {
   try {
-    const parsed = PublishPostBodySchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
-      return;
-    }
-
     const { id } = req.params;
 
     const existing = await db
@@ -167,7 +160,7 @@ router.patch("/posts/:id", requireApiKey, requireIdentity, async (req, res) => {
     }
 
     const { id } = req.params;
-    const { runId: _runId, ...fieldsToUpdate } = parsed.data;
+    const fieldsToUpdate = parsed.data;
 
     const existing = await db
       .select()
@@ -199,12 +192,6 @@ router.patch("/posts/:id", requireApiKey, requireIdentity, async (req, res) => {
 // DELETE /posts/:id — Archive a post (soft delete)
 router.delete("/posts/:id", requireApiKey, requireIdentity, async (req, res) => {
   try {
-    const parsed = DeletePostBodySchema.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: "Invalid request", details: parsed.error.flatten() });
-      return;
-    }
-
     const { id } = req.params;
 
     const existing = await db

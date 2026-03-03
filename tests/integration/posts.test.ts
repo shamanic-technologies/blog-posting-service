@@ -24,7 +24,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set(authHeaders)
         .send({
-          runId: "test-run",
           title: "My First Post",
           bodyMarkdown: "# Hello World",
           bodyHtml: "<h1>Hello World</h1>",
@@ -47,7 +46,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set(authHeaders)
         .send({
-          runId: "test-run",
           title: "Published Post",
           bodyMarkdown: "# Published",
           bodyHtml: "<h1>Published</h1>",
@@ -66,7 +64,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set(authHeaders)
         .send({
-          runId: "test-run",
           title: "My Post",
           slug: "custom-slug",
           bodyMarkdown: "# Test",
@@ -90,7 +87,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set(authHeaders)
         .send({
-          runId: "test-run",
           title: "My Post",
           bodyMarkdown: "# Test",
           bodyHtml: "<h1>Test</h1>",
@@ -107,7 +103,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set({ "x-org-id": "test-org-id", "x-user-id": "test-user-id" })
         .send({
-          runId: "test-run",
           title: "Test",
           bodyMarkdown: "# Test",
           bodyHtml: "<h1>Test</h1>",
@@ -123,7 +118,6 @@ describe("Posts CRUD", () => {
         .post("/posts")
         .set({ "X-API-Key": "test-api-key", "Content-Type": "application/json" })
         .send({
-          runId: "test-run",
           title: "Test",
           bodyMarkdown: "# Test",
           bodyHtml: "<h1>Test</h1>",
@@ -135,11 +129,43 @@ describe("Posts CRUD", () => {
       expect(res.body.error).toContain("x-org-id");
     });
 
+    it("rejects without x-run-id header", async () => {
+      const res = await request(app)
+        .post("/posts")
+        .set({ "X-API-Key": "test-api-key", "x-org-id": "test-org-id", "x-user-id": "test-user-id", "Content-Type": "application/json" })
+        .send({
+          title: "Test",
+          bodyMarkdown: "# Test",
+          bodyHtml: "<h1>Test</h1>",
+          authorName: "Kevin",
+          targetSite: "test.com",
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body.error).toContain("x-run-id");
+    });
+
+    it("stores runId from x-run-id header", async () => {
+      const res = await request(app)
+        .post("/posts")
+        .set(authHeaders)
+        .send({
+          title: "Run Tracked Post",
+          bodyMarkdown: "# Test",
+          bodyHtml: "<h1>Test</h1>",
+          authorName: "Kevin",
+          targetSite: "kevinlourd.com",
+        });
+
+      expect(res.status).toBe(201);
+      expect(res.body.post.runId).toBe("test-run-id");
+    });
+
     it("rejects missing required fields", async () => {
       const res = await request(app)
         .post("/posts")
         .set(authHeaders)
-        .send({ runId: "test-run" });
+        .send({});
 
       expect(res.status).toBe(400);
     });
@@ -157,8 +183,7 @@ describe("Posts CRUD", () => {
 
       const res = await request(app)
         .post(`/posts/${post.id}/publish`)
-        .set(authHeaders)
-        .send({ runId: "test-run" });
+        .set(authHeaders);
 
       expect(res.status).toBe(200);
       expect(res.body.post.status).toBe("published");
@@ -175,8 +200,7 @@ describe("Posts CRUD", () => {
 
       const res = await request(app)
         .post(`/posts/${post.id}/publish`)
-        .set(authHeaders)
-        .send({ runId: "test-run" });
+        .set(authHeaders);
 
       expect(res.status).toBe(400);
     });
@@ -184,8 +208,7 @@ describe("Posts CRUD", () => {
     it("returns 404 for nonexistent post", async () => {
       const res = await request(app)
         .post("/posts/00000000-0000-0000-0000-000000000000/publish")
-        .set(authHeaders)
-        .send({ runId: "test-run" });
+        .set(authHeaders);
 
       expect(res.status).toBe(404);
     });
@@ -204,7 +227,6 @@ describe("Posts CRUD", () => {
         .patch(`/posts/${post.id}`)
         .set(authHeaders)
         .send({
-          runId: "test-run",
           title: "Updated Title",
           summary: "New summary",
         });
@@ -218,7 +240,7 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .patch("/posts/00000000-0000-0000-0000-000000000000")
         .set(authHeaders)
-        .send({ runId: "test-run", title: "Updated" });
+        .send({ title: "Updated" });
 
       expect(res.status).toBe(404);
     });
@@ -227,7 +249,7 @@ describe("Posts CRUD", () => {
       const res = await request(app)
         .patch("/posts/00000000-0000-0000-0000-000000000000")
         .set({ "x-org-id": "test-org-id", "x-user-id": "test-user-id" })
-        .send({ runId: "test-run", title: "Updated" });
+        .send({ title: "Updated" });
 
       expect(res.status).toBe(401);
     });
@@ -244,8 +266,7 @@ describe("Posts CRUD", () => {
 
       const res = await request(app)
         .delete(`/posts/${post.id}`)
-        .set(authHeaders)
-        .send({ runId: "test-run" });
+        .set(authHeaders);
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
@@ -263,8 +284,7 @@ describe("Posts CRUD", () => {
     it("returns 404 for nonexistent post", async () => {
       const res = await request(app)
         .delete("/posts/00000000-0000-0000-0000-000000000000")
-        .set(authHeaders)
-        .send({ runId: "test-run" });
+        .set(authHeaders);
 
       expect(res.status).toBe(404);
     });
@@ -272,8 +292,7 @@ describe("Posts CRUD", () => {
     it("rejects without API key", async () => {
       const res = await request(app)
         .delete("/posts/00000000-0000-0000-0000-000000000000")
-        .set({ "x-org-id": "test-org-id", "x-user-id": "test-user-id" })
-        .send({ runId: "test-run" });
+        .set({ "x-org-id": "test-org-id", "x-user-id": "test-user-id" });
 
       expect(res.status).toBe(401);
     });
